@@ -48,7 +48,7 @@ class AIService:
 
         # 2. Direct HTTP REST fallback
         try:
-            gemini_model_id = selected_model if selected_model.startswith("gemini-") else "gemini-2.5-flash"
+            gemini_model_id = selected_model if selected_model.startswith("gemini-") else "gemini-3.6-flash"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model_id}:generateContent?key={api_key}"
             
             contents = []
@@ -111,7 +111,15 @@ class AIService:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 async with client.stream("POST", url, json=payload) as response:
                     if response.status_code != 200:
-                        yield f"❌ **Streaming Error ({response.status_code})**: Failed to open stream."
+                        logger.warning(
+                            "Gemini streaming request failed with %s; falling back to non-streaming response.",
+                            response.status_code,
+                        )
+                        fallback_response = await self.generate_response(
+                            conversation_history=conversation_history,
+                            model_name=selected_model,
+                        )
+                        yield fallback_response
                         return
 
                     async for line in response.aiter_lines():
@@ -132,6 +140,10 @@ class AIService:
                                 continue
         except Exception as e:
             logger.exception("Error in AI stream generation")
-            yield f"\n\n❌ **Stream Interrupted**: {str(e)}"
+            fallback_response = await self.generate_response(
+                conversation_history=conversation_history,
+                model_name=selected_model,
+            )
+            yield fallback_response
 
 ai_service = AIService()
