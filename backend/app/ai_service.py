@@ -12,7 +12,7 @@ class AIService:
         self.default_model = self._normalize_model_name(settings.GEMINI_MODEL)
 
     def _normalize_model_name(self, model_name: str | None) -> str:
-        default_model = "gemini-2.5-flash"
+        default_model = "gemini-3.6-flash"
         if not model_name:
             return default_model
 
@@ -28,14 +28,14 @@ class AIService:
         cleaned = cleaned.strip("/?& ")
 
         if cleaned.startswith("gemini-"):
-            supported = {"gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"}
+            supported = {"gemini-3.6-flash", "gemini-3.6-flash-lite", "gemini-3.6-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"}
             if cleaned in supported:
+                if cleaned.startswith("gemini-2.5"):
+                    return "gemini-3.6-flash"
                 return cleaned
-            if cleaned.startswith("gemini-2.5"):
-                return cleaned
-            if cleaned.startswith("gemini-3."):
-                return "gemini-2.5-flash"
-            return "gemini-2.5-flash"
+            if cleaned.startswith("gemini-2.0") or cleaned.startswith("gemini-2.5") or cleaned.startswith("gemini-3."):
+                return "gemini-3.6-flash"
+            return default_model
 
         return default_model
 
@@ -76,7 +76,7 @@ class AIService:
 
         # 2. Direct HTTP REST fallback
         try:
-            gemini_model_id = selected_model if selected_model.startswith("gemini-") else "gemini-3.6-flash"
+            gemini_model_id = selected_model if selected_model.startswith("gemini-") else "gemini-2.0-flash"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model_id}:generateContent?key={api_key}"
             
             contents = []
@@ -122,7 +122,7 @@ class AIService:
             )
             return
 
-        gemini_model_id = selected_model if selected_model.startswith("gemini-") else "gemini-2.5-flash"
+        gemini_model_id = selected_model if selected_model.startswith("gemini-") else "gemini-2.0-flash"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model_id}:streamGenerateContent?alt=sse&key={api_key}"
 
         contents = []
