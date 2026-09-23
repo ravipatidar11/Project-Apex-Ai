@@ -154,7 +154,7 @@ The project is deployed as three public services:
 | Source code | GitHub | [ravipatidar11/Project-Apex-Ai](https://github.com/ravipatidar11/Project-Apex-Ai) |
 | Backend API | Render | [project-apex-ai-backend.onrender.com](https://project-apex-ai-backend.onrender.com) |
 | Database | Neon PostgreSQL | Production database for chat history |
-| Frontend | Vercel | Set the deployed URL here after the first Vercel deployment |
+| Frontend | Vercel | [project-apex-ai-frontend.vercel.app](https://project-apex-ai-frontend.vercel.app/) |
 
 ### 1. Create the Neon PostgreSQL database
 
