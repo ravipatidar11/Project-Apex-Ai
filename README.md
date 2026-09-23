@@ -145,40 +145,81 @@ ai-chatbot-app/
 
 ---
 
-## 🌐 Production Deployment Guide
+## 🌐 Production Deployment
 
-### Option 1: Free Database Setup (Supabase / Neon PostgreSQL)
-1. Create a free account at [Supabase](https://supabase.com) or [Neon.tech](https://neon.tech).
-2. Create a new PostgreSQL database instance.
-3. Copy your Database Connection URI:
-   `postgresql://postgres:[YOUR-PASSWORD]@[HOST]:5432/postgres`
+The project is deployed as three public services:
 
----
+| Service | Provider | Configuration |
+| :--- | :--- | :--- |
+| Source code | GitHub | [ravipatidar11/Project-Apex-Ai](https://github.com/ravipatidar11/Project-Apex-Ai) |
+| Backend API | Render | [project-apex-ai-backend.onrender.com](https://project-apex-ai-backend.onrender.com) |
+| Database | Neon PostgreSQL | Production database for chat history |
+| Frontend | Vercel | Set the deployed URL here after the first Vercel deployment |
 
-### Option 2: Deploy Backend to Render (Free Tier)
-1. Fork or push this repository to GitHub.
-2. Sign in to [Render.com](https://render.com).
-3. Click **New +** -> **Web Service** and connect your repository (or use Blueprint with `backend/render.yaml`).
-4. Set Root Directory to `backend`.
-5. Set Environment Variables:
-   - `GEMINI_API_KEY` = *your Google Gemini API Key*
-   - `DATABASE_URL` = *your Supabase PostgreSQL URI*
-   - `CORS_ORIGINS` = `https://your-frontend-app.vercel.app`
-6. Click **Deploy**. Note your live backend URL (e.g. `https://ai-chatbot-backend.onrender.com`).
+### 1. Create the Neon PostgreSQL database
 
----
+1. Create a project at [Neon](https://neon.tech).
+2. Open **Connect** and copy the pooled PostgreSQL connection string.
+3. Keep the connection string private. It contains the database password.
 
-### Option 3: Deploy Frontend to Vercel (Free Tier)
-1. Sign in to [Vercel](https://vercel.com).
-2. Click **Add New Project** and import your GitHub repository.
-3. Set Framework Preset to **Vite**.
-4. Set Root Directory to `frontend`.
-5. Add Environment Variable:
-   - `VITE_API_BASE_URL` = `https://ai-chatbot-backend.onrender.com`
-6. Click **Deploy**.
+The value should look similar to:
 
-Your live deployed frontend will automatically communicate with your live backend and PostgreSQL database end-to-end!
+```text
+postgresql://user:password@ep-example-pooler.neon.tech/neondb?sslmode=require
+```
 
+### 2. Deploy the backend to Render
+
+Create a **Web Service** from the GitHub repository with these settings:
+
+```text
+Branch: main
+Root Directory: backend
+Language: Python 3
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Plan: Free
+```
+
+Add these Render environment variables:
+
+```text
+GEMINI_API_KEY=your_new_google_ai_studio_key
+GEMINI_MODEL=gemini-3.6-flash
+DATABASE_URL=your_neon_postgresql_connection_string
+CORS_ORIGINS=*
+```
+
+The deployed backend health endpoint is:
+
+
+https://project-apex-ai-backend.onrender.com/api/health
+```
+
+### 3. Deploy the frontend to Vercel
+
+1. Import the GitHub repository at [Vercel](https://vercel.com/new).
+2. Set **Root Directory** to `frontend`.
+3. Select the **Vite** framework preset.
+4. Add this environment variable for **Production and Preview**:
+
+```text
+VITE_API_BASE_URL=https://project-apex-ai-backend.onrender.com
+```
+
+5. Click **Deploy**.
+
+The frontend build uses `npm run build` and outputs to `dist`. Do not add
+`GEMINI_API_KEY` to Vercel; the key must remain on the backend only.
+
+### Security and data notes
+
+- Never commit `.env`, API keys, database URLs, or passwords.
+- If a key is exposed, revoke it in Google AI Studio and create a replacement.
+- `CORS_ORIGINS=*` is convenient for initial public deployment. Restrict it to
+  the Vercel domain after the frontend URL is known.
+- Neon PostgreSQL is recommended for persistent production chat history. Local
+  SQLite (`sqlite:///./chatbot.db`) is intended for development only.
 ---
 
 ## 📄 License
