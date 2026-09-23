@@ -2,8 +2,8 @@ import React from 'react';
 import { Cpu, ChevronDown } from 'lucide-react';
 
 const MODELS = [
-  { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', badge: 'Fastest' },
-  { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', badge: 'Reasoning' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'Fastest' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', badge: 'Lightweight' },
 ];
 
 export default function ModelSelector({ selectedModel, onSelectModel }) {

@@ -9,7 +9,35 @@ logger = logging.getLogger(__name__)
 class AIService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
-        self.default_model = settings.GEMINI_MODEL or "gemini-3.6-flash"
+        self.default_model = self._normalize_model_name(settings.GEMINI_MODEL)
+
+    def _normalize_model_name(self, model_name: str | None) -> str:
+        default_model = "gemini-2.5-flash"
+        if not model_name:
+            return default_model
+
+        cleaned = str(model_name).strip()
+        if not cleaned:
+            return default_model
+
+        for prefix in ("publishers/google/models/", "models/", "google/"):
+            if cleaned.startswith(prefix):
+                cleaned = cleaned[len(prefix):]
+                break
+
+        cleaned = cleaned.strip("/?& ")
+
+        if cleaned.startswith("gemini-"):
+            supported = {"gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"}
+            if cleaned in supported:
+                return cleaned
+            if cleaned.startswith("gemini-2.5"):
+                return cleaned
+            if cleaned.startswith("gemini-3."):
+                return "gemini-2.5-flash"
+            return "gemini-2.5-flash"
+
+        return default_model
 
     def _get_api_key(self) -> str:
         return os.getenv("GEMINI_API_KEY", settings.GEMINI_API_KEY)
@@ -17,7 +45,7 @@ class AIService:
     async def generate_response(self, conversation_history: List[dict], model_name: str = None) -> str:
         """Generates a complete response from Google Gemini AI API."""
         api_key = self._get_api_key()
-        selected_model = model_name or self.default_model
+        selected_model = self._normalize_model_name(model_name or self.default_model)
 
         if not api_key or api_key == "your_gemini_api_key_here":
             return (
@@ -85,7 +113,7 @@ class AIService:
     async def generate_response_stream(self, conversation_history: List[dict], model_name: str = None) -> AsyncGenerator[str, None]:
         """Streams real-time tokens from Google Gemini API."""
         api_key = self._get_api_key()
-        selected_model = model_name or self.default_model
+        selected_model = self._normalize_model_name(model_name or self.default_model)
 
         if not api_key or api_key == "your_gemini_api_key_here":
             yield (

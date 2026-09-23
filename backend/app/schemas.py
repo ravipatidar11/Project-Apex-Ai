@@ -9,7 +9,7 @@ class MessageBase(BaseModel):
 
 class MessageCreate(BaseModel):
     content: str = Field(..., min_length=1, description="User prompt message")
-    model: Optional[str] = Field(default="gemini-3.6-flash", description="Optional AI model selection")
+    model: Optional[str] = Field(default="gemini-2.5-flash", description="Optional AI model selection")
 
 class MessageResponse(MessageBase):
     id: int

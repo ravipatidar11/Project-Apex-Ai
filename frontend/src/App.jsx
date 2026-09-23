@@ -13,7 +13,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-3.6-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
   const [isDbConnected, setIsDbConnected] = useState(true);
 
   const messagesEndRef = useRef(null);

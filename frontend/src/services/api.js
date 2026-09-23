@@ -67,14 +67,14 @@ export const api = {
     }),
 
   // Send user message & retrieve complete AI assistant response
-  sendMessage: (chatId, content, model = "gemini-3.6-flash") => 
+  sendMessage: (chatId, content, model = "gemini-2.5-flash") => 
     request(`/chats/${chatId}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content, model }),
     }),
 
   // Stream AI response real-time via Server-Sent Events (SSE)
-  sendMessageStream: async (chatId, content, model = "gemini-3.6-flash", onChunk) => {
+  sendMessageStream: async (chatId, content, model = "gemini-2.5-flash", onChunk) => {
     const url = `${BASE_URL}/chats/${chatId}/messages/stream`;
     const response = await fetch(url, {
       method: 'POST',
