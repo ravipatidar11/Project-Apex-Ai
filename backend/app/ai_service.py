@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class AIService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
-        self.default_model = settings.GEMINI_MODEL or "gemini-2.5-flash"
+        self.default_model = settings.GEMINI_MODEL or "gemini-3.6-flash"
 
     def _get_api_key(self) -> str:
         return os.getenv("GEMINI_API_KEY", settings.GEMINI_API_KEY)

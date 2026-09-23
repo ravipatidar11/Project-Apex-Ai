@@ -8,7 +8,7 @@ A production-ready, full-stack AI Chatbot application with a glassmorphic respon
 
 ## ✨ Features
 
-- ⚡ **Real-Time AI Response Generation**: Powered by Google Gemini API (`gemini-2.5-flash` / `gemini-1.5-pro`) with streaming response support.
+- ⚡ **Real-Time AI Response Generation**: Powered by Google Gemini API (`gemini-3.6-flash`) with streaming response support.
 - 🎨 **Modern Glassmorphic Dark UI**: Custom CSS design system featuring neon gradients, responsive sidebar, auto-resizing text input, and quick starter prompt cards.
 - 📜 **Chat Threads & Persistent History**: Auto-titled conversations stored in PostgreSQL/SQLite database. Switch between chats, search history, or delete chats.
 - 💻 **Markdown & Code Syntax Highlighting**: Clean rendering of code blocks with language tags and 1-click **Copy Code** functionality.
@@ -92,7 +92,7 @@ ai-chatbot-app/
    CORS_ORIGINS=*
    DATABASE_URL=sqlite:///./chatbot.db
    GEMINI_API_KEY=your_gemini_api_key_here
-   GEMINI_MODEL=gemini-2.5-flash
+   GEMINI_MODEL=gemini-3.6-flash
    ```
 
 5. Start the FastAPI backend server:
