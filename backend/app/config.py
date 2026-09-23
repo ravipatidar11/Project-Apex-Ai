@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[str, List[str]] = "*"
     
     # Database configuration
-    DATABASE_URL: str = "sqlite:///./chatbot.db"
-    
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/chatbot"
+
     # AI configuration
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
