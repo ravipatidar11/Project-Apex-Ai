@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[str, List[str]] = "*"
     
     # Database configuration
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/chatbot"
+    DATABASE_URL: str = ""
 
     # AI configuration
     GEMINI_API_KEY: str = ""
