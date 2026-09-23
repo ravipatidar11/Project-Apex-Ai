@@ -1,8 +1,19 @@
 // API Client Service connecting React frontend to FastAPI backend
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL 
-  ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')}/api` 
-  : '/api';
+function getBaseUrl() {
+  let envUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
+  if (!envUrl) {
+    return '/api';
+  }
+  if (!/^https?:\/\//i.test(envUrl)) {
+    if (envUrl.includes('.') && !envUrl.startsWith('/')) {
+      envUrl = `https://${envUrl}`;
+    }
+  }
+  return `${envUrl.replace(/\/$/, '')}/api`;
+}
+
+const BASE_URL = getBaseUrl();
 
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
@@ -67,14 +78,14 @@ export const api = {
     }),
 
   // Send user message & retrieve complete AI assistant response
-  sendMessage: (chatId, content, model = "gemini-3.6-flash") =>
+  sendMessage: (chatId, content, model = "gemini-3.5-flash-lite") =>
     request(`/chats/${chatId}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content, model }),
     }),
 
   // Stream AI response real-time via Server-Sent Events (SSE)
-  sendMessageStream: async (chatId, content, model = "gemini-3.6-flash", onChunk) => {
+  sendMessageStream: async (chatId, content, model = "gemini-3.5-flash-lite", onChunk) => {
     const url = `${BASE_URL}/chats/${chatId}/messages/stream`;
     const response = await fetch(url, {
       method: 'POST',

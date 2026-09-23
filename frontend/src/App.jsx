@@ -13,7 +13,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-3.6-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash-lite');
   const [isDbConnected, setIsDbConnected] = useState(true);
 
   const messagesEndRef = useRef(null);
@@ -28,6 +28,24 @@ export default function App() {
 
   useEffect(() => {
     loadHealthAndChats();
+
+    const interval = setInterval(async () => {
+      try {
+        const health = await api.getHealth();
+        const connected = health.database === 'ok';
+        setIsDbConnected((prev) => {
+          if (!prev && connected) {
+            // Backend just became available: load chats
+            api.getChats().then(setChats).catch(() => {});
+          }
+          return connected;
+        });
+      } catch (e) {
+        setIsDbConnected(false);
+      }
+    }, 6000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadHealthAndChats = async () => {

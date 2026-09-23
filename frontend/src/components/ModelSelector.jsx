@@ -2,8 +2,11 @@ import React from 'react';
 import { Cpu, ChevronDown } from 'lucide-react';
 
 const MODELS = [
-  { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', badge: 'Latest' },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'Stable' },
+  { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite', badge: 'Fast & High Quota' },
+  { id: 'gemini-flash-lite-latest', name: 'Gemini Flash-Lite Latest', badge: 'Ultra Fast' },
+  { id: 'gemini-flash-latest', name: 'Gemini Flash Latest', badge: 'Balanced' },
+  { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', badge: 'High Quality' },
+  { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', badge: 'Daily Limit Reached' },
 ];
 
 export default function ModelSelector({ selectedModel, onSelectModel }) {
