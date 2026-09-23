@@ -12,7 +12,7 @@ services:
       - key: CORS_ORIGINS
         value: "*"
       - key: GEMINI_MODEL
-        value: gemini-3.6-flash
+        value: gemini-2.5-flash
       - key: GEMINI_API_KEY
         sync: false
       - key: DATABASE_URL
