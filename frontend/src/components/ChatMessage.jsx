@@ -55,12 +55,52 @@ export default function ChatMessage({ message }) {
         );
       }
 
-      // Format text lines & inline bold/code
+      // Format text lines & inline bold/code/headings/lists
+      const blocks = part.value.split(/\n\s*\n/);
       return (
         <div key={idx} className="markdown-body">
-          {part.value.split('\n\n').map((paragraph, pIdx) => (
-            <p key={pIdx}>{formatInlineMarkdown(paragraph)}</p>
-          ))}
+          {blocks.map((block, bIdx) => {
+            const trimmed = block.trim();
+            if (!trimmed) return null;
+
+            if (trimmed === '---' || trimmed === '***') {
+              return <hr key={bIdx} className="markdown-hr" />;
+            }
+            if (trimmed.startsWith('### ')) {
+              return <h3 key={bIdx}>{formatInlineMarkdown(trimmed.replace(/^###\s+/, ''))}</h3>;
+            }
+            if (trimmed.startsWith('## ')) {
+              return <h2 key={bIdx}>{formatInlineMarkdown(trimmed.replace(/^##\s+/, ''))}</h2>;
+            }
+            if (trimmed.startsWith('# ')) {
+              return <h1 key={bIdx}>{formatInlineMarkdown(trimmed.replace(/^#\s+/, ''))}</h1>;
+            }
+
+            const lines = trimmed.split('\n');
+            const isBulletList = lines.length > 0 && lines.every((l) => /^[\*\-]\s+/.test(l.trim()));
+            if (isBulletList) {
+              return (
+                <ul key={bIdx} className="markdown-list">
+                  {lines.map((line, lIdx) => (
+                    <li key={lIdx}>
+                      {formatInlineMarkdown(line.trim().replace(/^[\*\-]\s+/, ''))}
+                    </li>
+                  ))}
+                </ul>
+              );
+            }
+
+            return (
+              <p key={bIdx}>
+                {lines.map((line, lIdx) => (
+                  <React.Fragment key={lIdx}>
+                    {lIdx > 0 && <br />}
+                    {formatInlineMarkdown(line)}
+                  </React.Fragment>
+                ))}
+              </p>
+            );
+          })}
         </div>
       );
     });

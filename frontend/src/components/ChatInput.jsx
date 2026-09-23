@@ -26,7 +26,7 @@ export default function ChatInput({ input, setInput, onSend, isLoading, onStop }
         <textarea
           ref={textareaRef}
           className="chat-textarea"
-          placeholder="Ask Apex AI anything... (Press Enter to send)"
+          placeholder="Ask Apex AI anything..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

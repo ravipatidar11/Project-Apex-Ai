@@ -14,27 +14,26 @@ export default function Header({
     <header className="top-header">
       <div className="header-left">
         <button className="mobile-toggle" onClick={onToggleSidebar} title="Toggle Sidebar">
-          <Menu size={22} />
+          <Menu size={20} />
         </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sparkles size={18} style={{ color: 'var(--accent-primary)' }} />
+        <div className="header-title-container">
+          <Sparkles size={16} className="sparkle-icon" />
           <h2 className="header-title">
             {currentChatTitle || 'New Conversation'}
           </h2>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="header-right">
         <ModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
         
         <button 
           onClick={onNewChat}
-          className="new-chat-btn"
-          style={{ margin: 0, padding: '8px 14px', fontSize: '0.85rem' }}
+          className="header-new-chat-btn"
           title="Start New Chat"
         >
           <Plus size={16} />
-          <span>New Chat</span>
+          <span className="new-chat-label">New Chat</span>
         </button>
       </div>
     </header>
