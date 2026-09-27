@@ -15,6 +15,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash-lite');
   const [isDbConnected, setIsDbConnected] = useState(true);
+  const [attachments, setAttachments] = useState([]);
+  const [memory, setMemory] = useState(() => localStorage.getItem('apex-ai-memory') || '');
+  const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -112,7 +115,8 @@ export default function App() {
   // Real-time Streaming Message Handler
   const handleSendMessage = async (customPrompt = null) => {
     const promptToSend = customPrompt || input;
-    if (!promptToSend.trim() || isLoading) return;
+    if ((!promptToSend.trim() && !attachments.length) || isLoading) return;
+    const filesToSend = attachments;
 
     let targetChatId = activeChatId;
 
@@ -136,6 +140,7 @@ export default function App() {
       chat_id: targetChatId,
       role: 'user',
       content: promptToSend,
+      attachments: filesToSend.map((file) => ({ filename: file.name, mime_type: file.type })),
       timestamp: new Date().toISOString(),
     };
 
@@ -149,6 +154,7 @@ export default function App() {
 
     setMessages((prev) => [...prev, userMsg, assistantMsgPlaceholder]);
     setInput('');
+    setAttachments([]);
     setIsLoading(true);
 
     try {
@@ -161,7 +167,7 @@ export default function App() {
               : msg
           )
         );
-      });
+      }, filesToSend, memory);
 
       // Refresh sidebar titles after message completes
       const updatedChats = await api.getChats();
@@ -169,7 +175,7 @@ export default function App() {
     } catch (e) {
       console.warn('Streaming fallback to standard REST endpoint...', e);
       try {
-        const fullResponse = await api.sendMessage(targetChatId, promptToSend, selectedModel);
+        const fullResponse = await api.sendMessage(targetChatId, promptToSend, selectedModel, filesToSend, memory);
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === assistantMsgId ? fullResponse : msg
@@ -251,6 +257,18 @@ export default function App() {
           onSend={() => handleSendMessage()}
           isLoading={isLoading}
           onStop={() => setIsLoading(false)}
+          attachments={attachments}
+          onAddAttachments={(files) => setAttachments((previous) => [...previous, ...files].slice(0, 5))}
+          onRemoveAttachment={(index) => setAttachments((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}
+          memory={isMemoryOpen ? memory : null}
+          onMemoryChange={(value) => {
+            if (typeof value === 'string') {
+              setMemory(value);
+              localStorage.setItem('apex-ai-memory', value);
+            } else {
+              setIsMemoryOpen((open) => !open);
+            }
+          }}
         />
       </main>
     </div>

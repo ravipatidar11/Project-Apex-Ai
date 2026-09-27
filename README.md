@@ -9,6 +9,9 @@ A production-ready, full-stack AI Chatbot application with a glassmorphic respon
 ## ✨ Features
 
 - ⚡ **Real-Time AI Response Generation**: Powered by Google Gemini API (`gemini-2.5-flash`) with streaming response support.
+- 🌐 **Live Search & Sandboxed Python**: Gemini can ground time-sensitive answers in Google Search and run Python snippets in Google's isolated execution tool to check code and calculations.
+- 🖼️ **Multimodal Attachments**: Send images, audio, PDFs, and text documents with a prompt (up to 5 files and 15 MB combined).
+- 🧠 **Long-Term Memory**: Keep editable preferences in this browser and use them as context across chats.
 - 🎨 **Modern Glassmorphic Dark UI**: Custom CSS design system featuring neon gradients, responsive sidebar, auto-resizing text input, and quick starter prompt cards.
 - 📜 **Chat Threads & Persistent History**: Auto-titled conversations stored in PostgreSQL/SQLite database. Switch between chats, search history, or delete chats.
 - 💻 **Markdown & Code Syntax Highlighting**: Clean rendering of code blocks with language tags and 1-click **Copy Code** functionality.
@@ -218,6 +221,11 @@ The frontend build uses `npm run build` and outputs to `dist`. Do not add
 - If a key is exposed, revoke it in Google AI Studio and create a replacement.
 - `CORS_ORIGINS=*` is convenient for initial public deployment. Restrict it to
   the Vercel domain after the frontend URL is known.
+- Saved memory stays in this browser's local storage and is sent to Gemini with
+   each prompt; it is not account-synced or encrypted by this application.
+- Uploaded files are stored with chat messages in the configured database and
+   sent to Gemini for analysis. Gemini's Python execution runs in Google's
+   hosted sandbox, not in the backend application process.
 - Neon PostgreSQL is recommended for persistent production chat history. Local
   SQLite (`sqlite:///./chatbot.db`) is intended for development only.
 ---

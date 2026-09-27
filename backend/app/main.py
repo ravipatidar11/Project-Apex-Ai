@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 from app.config import settings
 from app.database import Base, engine
 from app.routers import chats, health
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
+if "attachments_json" not in {column["name"] for column in inspect(engine).get_columns("messages")}:
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE messages ADD COLUMN attachments_json TEXT"))
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

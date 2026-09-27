@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, User, Copy, Check, Sparkles } from 'lucide-react';
+import { Bot, User, Copy, Check, FileText } from 'lucide-react';
 
 export default function ChatMessage({ message }) {
   const [copied, setCopied] = useState(false);
@@ -114,6 +114,16 @@ export default function ChatMessage({ message }) {
 
       <div className="message-content-box">
         <div className="bubble">
+          {message.attachments?.length > 0 && (
+            <div className="message-attachments">
+              {message.attachments.map((attachment, index) => (
+                <div className="message-attachment" key={`${attachment.filename}-${index}`}>
+                  <FileText size={15} />
+                  <span>{attachment.filename}</span>
+                </div>
+              ))}
+            </div>
+          )}
           {renderFormattedContent(message.content)}
         </div>
 
@@ -157,7 +167,14 @@ function formatInlineMarkdown(text) {
       if (cIndex % 2 === 1) {
         return <code key={cIndex}>{cPart}</code>;
       }
-      return cPart;
+      const linkParts = cPart.split(/(\[[^\]]+\]\(https?:\/\/[^)]+\))/g);
+      return linkParts.map((linkPart, linkIndex) => {
+        const link = linkPart.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
+        if (link) {
+          return <a key={`${cIndex}-${linkIndex}`} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>;
+        }
+        return linkPart;
+      });
     });
   });
 }

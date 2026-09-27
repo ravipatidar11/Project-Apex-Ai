@@ -15,6 +15,19 @@ function getBaseUrl() {
 
 const BASE_URL = getBaseUrl();
 
+function encodeAttachments(files) {
+  return Promise.all(files.map((file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      filename: file.name,
+      mime_type: file.type,
+      data: String(reader.result).split(',')[1],
+    });
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+    reader.readAsDataURL(file);
+  })));
+}
+
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
   const config = {
@@ -78,19 +91,20 @@ export const api = {
     }),
 
   // Send user message & retrieve complete AI assistant response
-  sendMessage: (chatId, content, model = "gemini-3.5-flash-lite") =>
+  sendMessage: async (chatId, content, model = "gemini-3.5-flash-lite", files = [], memory = '') =>
     request(`/chats/${chatId}/messages`, {
       method: 'POST',
-      body: JSON.stringify({ content, model }),
+      body: JSON.stringify({ content, model, attachments: await encodeAttachments(files), memory }),
     }),
 
   // Stream AI response real-time via Server-Sent Events (SSE)
-  sendMessageStream: async (chatId, content, model = "gemini-3.5-flash-lite", onChunk) => {
+  sendMessageStream: async (chatId, content, model = "gemini-3.5-flash-lite", onChunk, files = [], memory = '') => {
     const url = `${BASE_URL}/chats/${chatId}/messages/stream`;
+    const attachments = await encodeAttachments(files);
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, model }),
+      body: JSON.stringify({ content, model, attachments, memory }),
     });
 
     if (!response.ok) {

@@ -83,16 +83,27 @@ async def post_message_and_get_ai_response(
         chat_id = chat.id
 
     # 1. Save user message
-    crud.add_message(db, chat_id=chat_id, role="user", content=payload.content)
+    attachments = [attachment.model_dump() for attachment in payload.attachments]
+    crud.add_message(
+        db,
+        chat_id=chat_id,
+        role="user",
+        content=payload.content,
+        attachments=attachments,
+    )
 
     # 2. Get past history
     past_messages = crud.get_messages(db, chat_id)
-    history_formatted = [{"role": m.role, "content": m.content} for m in past_messages]
+    history_formatted = [
+        {"role": m.role, "content": m.content, "attachments": m.attachments}
+        for m in past_messages
+    ]
 
     # 3. Call AI Service
     ai_response_text = await ai_service.generate_response(
         conversation_history=history_formatted,
-        model_name=payload.model
+        model_name=payload.model,
+        memory_context=payload.memory,
     )
 
     # 4. Save AI message
@@ -118,14 +129,26 @@ async def stream_ai_response(
         chat_id = chat.id
 
     # Save user message
-    crud.add_message(db, chat_id=chat_id, role="user", content=payload.content)
+    attachments = [attachment.model_dump() for attachment in payload.attachments]
+    crud.add_message(
+        db,
+        chat_id=chat_id,
+        role="user",
+        content=payload.content,
+        attachments=attachments,
+    )
 
     past_messages = crud.get_messages(db, chat_id)
-    history_formatted = [{"role": m.role, "content": m.content} for m in past_messages]
+    history_formatted = [
+        {"role": m.role, "content": m.content, "attachments": m.attachments}
+        for m in past_messages
+    ]
 
     async def event_generator():
         full_text = ""
-        async for chunk in ai_service.generate_response_stream(history_formatted, payload.model):
+        async for chunk in ai_service.generate_response_stream(
+            history_formatted, payload.model, payload.memory
+        ):
             full_text += chunk
             yield f"data: {json.dumps({'chunk': chunk})}\n\n"
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app import models, schemas
@@ -30,11 +31,18 @@ def delete_chat(db: Session, chat_id: str) -> bool:
     db.commit()
     return True
 
-def add_message(db: Session, chat_id: str, role: str, content: str) -> models.Message:
+def add_message(
+    db: Session,
+    chat_id: str,
+    role: str,
+    content: str,
+    attachments: Optional[List[dict]] = None,
+) -> models.Message:
     db_message = models.Message(
         chat_id=chat_id,
         role=role,
         content=content,
+        attachments_json=json.dumps(attachments or []),
         timestamp=datetime.utcnow()
     )
     db.add(db_message)

@@ -1,5 +1,7 @@
 import uuid
+import json
 from datetime import datetime
+from typing import List
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -25,6 +27,16 @@ class Message(Base):
     chat_id = Column(String, ForeignKey("chats.id", ondelete="CASCADE"), nullable=False)
     role = Column(String(50), nullable=False)  # 'user', 'assistant', 'system'
     content = Column(Text, nullable=False)
+    attachments_json = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     chat = relationship("Chat", back_populates="messages")
+
+    @property
+    def attachments(self) -> List[dict]:
+        if not self.attachments_json:
+            return []
+        try:
+            return json.loads(self.attachments_json)
+        except (TypeError, json.JSONDecodeError):
+            return []
