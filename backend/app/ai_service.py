@@ -97,14 +97,16 @@ class AIService:
             return response_text
         return f"{response_text}\n\n**Sources**\n" + "\n".join(f"- {source}" for source in sources)
 
-    def _quota_error_message(self, last_model: str) -> str:
+    def _quota_error_message(self, requested_model: str, quota_models: List[str]) -> str:
+        quota_model_list = ", ".join(f"`{model}`" for model in quota_models)
         return (
             "⚠️ **Gemini API Quota Exceeded (429)**\n\n"
-            f"The free-tier quota for `{last_model}` has been exhausted.\n\n"
+            f"Gemini rejected `{requested_model}` with a quota or rate-limit error. "
+            f"No configured fallback model returned a response. Models that returned 429: {quota_model_list}.\n\n"
             "**How to resolve:**\n"
-            "1. Switch to **Gemini 3.5 Flash-Lite** or another model from the dropdown above.\n"
-            "2. Or obtain a fresh free API key from [Google AI Studio](https://aistudio.google.com/) and update `GEMINI_API_KEY` in `backend/.env`.\n"
-            "3. If using the free tier daily quota (20 requests/day for some models), it will reset automatically."
+            "1. Check this project's usage and model limits in [Google AI Studio](https://aistudio.google.com/) and the [Gemini API rate-limit guide](https://ai.google.dev/gemini-api/docs/rate-limits). Limits and reset windows depend on the model and project.\n"
+            "2. You can select another model from the dropdown above if it has quota available.\n"
+            "3. Wait for the affected limit window to reset, or use an API key from a project with available quota. Enabling billing may raise limits where supported."
         )
 
     async def generate_response(
@@ -137,6 +139,7 @@ class AIService:
 
         last_status = 500
         last_error = ""
+        quota_models = []
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             for current_model in models_to_try:
@@ -156,6 +159,9 @@ class AIService:
                     error_data = res.json() if res.headers.get("content-type") == "application/json" else res.text
                     last_error = str(error_data)
                     logger.warning("Model %s failed with status %s: %s", current_model, res.status_code, error_data)
+
+                    if res.status_code == 429:
+                        quota_models.append(current_model)
                     
                     # Retry another model when its tools are unavailable or it is overloaded.
                     if res.status_code in (400, 429, 503, 404, 500):
@@ -164,8 +170,8 @@ class AIService:
                     logger.warning("Request to model %s error: %s", current_model, req_err)
                     continue
 
-        if last_status == 429:
-            return self._quota_error_message(requested_model)
+        if quota_models:
+            return self._quota_error_message(requested_model, quota_models)
 
         return f"❌ **AI Service Error ({last_status})**: Failed to retrieve response from Gemini API. {last_error[:120]}"
 
