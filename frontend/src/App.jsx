@@ -6,6 +6,11 @@ import ChatInput from './components/ChatInput';
 import EmptyState from './components/EmptyState';
 import { api } from './services/api';
 
+function quotaLimitedModelsIn(content = '') {
+  const match = content.match(/Models that returned 429:\s*((?:`[^`]+`(?:,\s*)?)+)/);
+  return match ? [...match[1].matchAll(/`([^`]+)`/g)].map((item) => item[1]) : [];
+}
+
 export default function App() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
@@ -14,12 +19,33 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash-lite');
+  const [aiProvider, setAiProvider] = useState('gemini');
+  const [modelStatuses, setModelStatuses] = useState({});
   const [isDbConnected, setIsDbConnected] = useState(true);
   const [attachments, setAttachments] = useState([]);
   const [memory, setMemory] = useState(() => localStorage.getItem('apex-ai-memory') || '');
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
+
+  const updateModelStatus = ({ model, status }) => {
+    if (!model || !status) return;
+    setModelStatuses((previous) => ({
+      ...previous,
+      [model]: { status, checkedAt: new Date().toISOString() },
+    }));
+  };
+
+  const recordQuotaStatuses = (content, checkedAt = new Date().toISOString()) => {
+    const quotaModels = quotaLimitedModelsIn(content);
+    if (quotaModels.length === 0) return;
+    setModelStatuses((previous) => ({
+      ...previous,
+      ...Object.fromEntries(quotaModels
+        .filter((model) => !previous[model] || Date.parse(previous[model].checkedAt) <= Date.parse(checkedAt))
+        .map((model) => [model, { status: 'quota_limited', checkedAt }])),
+    }));
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,6 +81,10 @@ export default function App() {
     try {
       const health = await api.getHealth();
       setIsDbConnected(health.database === 'ok');
+      setAiProvider(health.ai_provider || 'gemini');
+      if (health.ai_provider === 'groq' && health.ai_model) {
+        setSelectedModel(health.ai_model);
+      }
     } catch (e) {
       console.warn('Backend server offline or starting up...');
       setIsDbConnected(false);
@@ -76,6 +106,7 @@ export default function App() {
     try {
       const detail = await api.getChatDetail(chatId);
       setMessages(detail.messages || []);
+      (detail.messages || []).forEach((message) => recordQuotaStatuses(message.content, message.timestamp));
     } catch (e) {
       console.error('Error fetching chat detail:', e);
       setMessages([]);
@@ -159,7 +190,9 @@ export default function App() {
 
     try {
       // Stream tokens real-time
+      let streamedContent = '';
       await api.sendMessageStream(targetChatId, promptToSend, selectedModel, (chunk) => {
+        streamedContent += chunk;
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === assistantMsgId
@@ -167,7 +200,8 @@ export default function App() {
               : msg
           )
         );
-      }, filesToSend, memory);
+      }, filesToSend, memory, updateModelStatus);
+      recordQuotaStatuses(streamedContent);
 
       // Refresh sidebar titles after message completes
       const updatedChats = await api.getChats();
@@ -176,6 +210,7 @@ export default function App() {
       console.warn('Streaming fallback to standard REST endpoint...', e);
       try {
         const fullResponse = await api.sendMessage(targetChatId, promptToSend, selectedModel, filesToSend, memory);
+        recordQuotaStatuses(fullResponse.content);
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === assistantMsgId ? fullResponse : msg
@@ -220,6 +255,8 @@ export default function App() {
           onNewChat={handleNewChat}
           selectedModel={selectedModel}
           onSelectModel={setSelectedModel}
+          modelStatuses={modelStatuses}
+          aiProvider={aiProvider}
           isDbConnected={isDbConnected}
         />
 

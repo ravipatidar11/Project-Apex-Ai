@@ -8,6 +8,8 @@ export default function Header({
   onNewChat, 
   selectedModel, 
   onSelectModel,
+  modelStatuses,
+  aiProvider,
   isDbConnected 
 }) {
   return (
@@ -25,7 +27,12 @@ export default function Header({
       </div>
 
       <div className="header-right">
-        <ModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
+        <ModelSelector
+          selectedModel={selectedModel}
+          onSelectModel={onSelectModel}
+          modelStatuses={modelStatuses}
+          aiProvider={aiProvider}
+        />
         
         <button 
           onClick={onNewChat}

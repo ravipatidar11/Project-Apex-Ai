@@ -16,8 +16,11 @@ class Settings(BaseSettings):
     DATABASE_URL: str = ""
 
     # AI configuration
+    AI_PROVIDER: str = "gemini"
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.5-flash-lite"
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "openai/gpt-oss-20b"
 
     model_config = SettingsConfigDict(
         env_file=".env",

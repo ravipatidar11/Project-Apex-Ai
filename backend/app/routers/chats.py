@@ -149,6 +149,10 @@ async def stream_ai_response(
         async for chunk in ai_service.generate_response_stream(
             history_formatted, payload.model, payload.memory
         ):
+            if isinstance(chunk, dict) and chunk.get("type") == "model_status":
+                yield f"data: {json.dumps({'model_status': chunk})}\n\n"
+                continue
+
             full_text += chunk
             yield f"data: {json.dumps({'chunk': chunk})}\n\n"
 

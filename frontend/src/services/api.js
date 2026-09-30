@@ -98,7 +98,7 @@ export const api = {
     }),
 
   // Stream AI response real-time via Server-Sent Events (SSE)
-  sendMessageStream: async (chatId, content, model = "gemini-3.5-flash-lite", onChunk, files = [], memory = '') => {
+  sendMessageStream: async (chatId, content, model = "gemini-3.5-flash-lite", onChunk, files = [], memory = '', onModelStatus) => {
     const url = `${BASE_URL}/chats/${chatId}/messages/stream`;
     const attachments = await encodeAttachments(files);
     const response = await fetch(url, {
@@ -133,6 +133,9 @@ export const api = {
             const parsed = JSON.parse(dataStr);
             if (parsed.chunk) {
               onChunk(parsed.chunk);
+            }
+            if (parsed.model_status) {
+              onModelStatus?.(parsed.model_status);
             }
           } catch (e) {
             // ignore JSON parse error for partial lines

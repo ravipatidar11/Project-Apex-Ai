@@ -1,6 +1,6 @@
 # Apex AI - Full-Stack Modern AI Chatbot
 
-A production-ready, full-stack AI Chatbot application with a glassmorphic responsive UI built using **React (Vite)**, **Python FastAPI**, **SQLAlchemy ORM (PostgreSQL/Supabase/SQLite)**, and **Google Gemini API**.
+A production-ready, full-stack AI Chatbot application with a glassmorphic responsive UI built using **React (Vite)**, **Python FastAPI**, **SQLAlchemy ORM (PostgreSQL/Supabase/SQLite)**, and hosted **Google Gemini or Groq APIs**.
 
 ![Apex AI Chatbot App](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20PostgreSQL%20%7C%20Gemini-6366F1?style=for-the-badge)
 
@@ -8,7 +8,7 @@ A production-ready, full-stack AI Chatbot application with a glassmorphic respon
 
 ## ✨ Features
 
-- ⚡ **Real-Time AI Response Generation**: Powered by Google Gemini API (`gemini-2.5-flash`) with streaming response support.
+- ⚡ **Real-Time AI Response Generation**: Use Google Gemini or Groq models with streaming response support.
 - 🌐 **Live Search & Sandboxed Python**: Gemini can ground time-sensitive answers in Google Search and run Python snippets in Google's isolated execution tool to check code and calculations.
 - 🖼️ **Multimodal Attachments**: Send images, audio, PDFs, and text documents with a prompt (up to 5 files and 15 MB combined).
 - 🧠 **Long-Term Memory**: Keep editable preferences in this browser and use them as context across chats.
@@ -88,15 +88,24 @@ ai-chatbot-app/
    ```bash
    cp .env.example .env
    ```
-   Open `.env` and add your **GEMINI_API_KEY**:
+   Open `.env` and choose a provider. Gemini is the default:
    ```env
    PORT=8000
    HOST=0.0.0.0
    CORS_ORIGINS=*
    DATABASE_URL=sqlite:///./chatbot.db
+   AI_PROVIDER=gemini
    GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_MODEL=gemini-2.5-flash
    ```
+
+   To use Groq instead, create a key at [Groq Console](https://console.groq.com/keys) and set:
+   ```env
+   AI_PROVIDER=groq
+   GROQ_API_KEY=your_groq_api_key_here
+   GROQ_MODEL=openai/gpt-oss-20b
+   ```
+   Groq free-tier requests are subject to model and account rate limits. Choose `qwen/qwen3.8-27b` for image attachments; PDF/audio/document attachments are not supported by the Groq integration.
 
 5. Start the FastAPI backend server:
    ```bash
